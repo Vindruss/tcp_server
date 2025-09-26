@@ -54,8 +54,8 @@ class MinimalPublisher(Node):
         self.subscription  
 
     def listener_callback(self, msg):     
-        x = msg.pose.pose.position.x
-        y = msg.pose.pose.position.y
+        self.x = msg.pose.pose.position.x
+        self.y = msg.pose.pose.position.y
         #self.get_logger().info('Position: ' + str(x) + ' ' + str(y))
     def timer_callback(self):
         #msg = String()
