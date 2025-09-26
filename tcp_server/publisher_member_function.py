@@ -56,7 +56,7 @@ class MinimalPublisher(Node):
     def listener_callback(self, msg):     
         x = msg.pose.pose.position.x
         y = msg.pose.pose.position.y
-        self.get_logger().info('Position: ' str(x) + ' ' + str(y))
+        self.get_logger().info('Position: ' + str(x) + ' ' + str(y))
     def timer_callback(self):
         #msg = String()
         #msg.data = 'Hello World: %d' % self.i
