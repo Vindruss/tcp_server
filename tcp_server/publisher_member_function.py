@@ -47,7 +47,7 @@ class MinimalPublisher(Node):
 
         super().__init__('minimal_subscriber')
         self.subscription = self.create_subscription(
-            String,
+            Odometry,
             'odom',
             self.listener_callback,
             10)
@@ -113,7 +113,7 @@ def main(args=None):
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    inimal_publisher.destroy_node()
+    minimal_publisher.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
