@@ -18,6 +18,7 @@ import socket
 
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped
+from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry 
 
 from std_msgs.msg import Header
@@ -30,16 +31,18 @@ from std_msgs.msg import String
 
 class MinimalPublisher(Node):
     velocity = 0
+    x = 0.0
+    y = 0.0
     def __init__(self):
-        super().__init__('minimal_publisher')
-        #self.publisher_ = self.create_publisher(String, 'topic', 10)
-        self.publisher_ = self.create_publisher(Twist, 'cmd_vel_out', 10)
-        timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.i = 0
+        # super().__init__('minimal_publisher')
+        # #self.publisher_ = self.create_publisher(String, 'topic', 10)
+        # self.publisher_ = self.create_publisher(Twist, 'cmd_vel_out', 10)
+        # timer_period = 0.5  # seconds
+        # self.timer = self.create_timer(timer_period, self.timer_callback)
+        # self.i = 0
         
-        t1 = threading.Thread(target=self.tcp_loop, args=())
-        t1.start()
+        # t1 = threading.Thread(target=self.tcp_loop, args=())
+        # t1.start()
 
 
         super().__init__('minimal_subscriber')
@@ -50,6 +53,10 @@ class MinimalPublisher(Node):
             10)
         self.subscription  
 
+    def listener_callback(self, msg):
+        self.get_logger().info('I heard: "%s"' % msg.data)
+        x = msg.pose.pose.position.x
+        y = msg.pose.pose.position.y
     def timer_callback(self):
         #msg = String()
         #msg.data = 'Hello World: %d' % self.i
@@ -98,7 +105,7 @@ def main(args=None):
 
     minimal_publisher = MinimalPublisher()
 
-    promenna = val
+    
     
 
     rclpy.spin(minimal_publisher)
