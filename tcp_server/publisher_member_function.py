@@ -92,7 +92,7 @@ class MinimalPublisher(Node):
                 
             
             if data[0] == 97:
-                conn.send(b('Position: ' + str(self.x) + ' ' + str(self.y)))
+                conn.send(('Position: ' + str(self.x) + ' ' + str(self.y)).encode())
                 #self.velocity = 1.0
             else: 
                 conn.send(b"spatne")
