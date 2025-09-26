@@ -78,7 +78,7 @@ class MinimalPublisher(Node):
         
     def tcp_loop(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = '192.168.0.1'
+        host = '10.0.100.145'
         port = 8899
         print(f"TCP socket sonn.rectarted")
         s.bind((host, port))
