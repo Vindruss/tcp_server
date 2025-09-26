@@ -53,10 +53,10 @@ class MinimalPublisher(Node):
             10)
         self.subscription  
 
-    def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
+    def listener_callback(self, msg):     
         x = msg.pose.pose.position.x
         y = msg.pose.pose.position.y
+        self.get_logger().info('Position: ' str(x) + ' ' + str(y))
     def timer_callback(self):
         #msg = String()
         #msg.data = 'Hello World: %d' % self.i
