@@ -41,8 +41,8 @@ class MinimalPublisher(Node):
         # self.timer = self.create_timer(timer_period, self.timer_callback)
         # self.i = 0
         
-        # t1 = threading.Thread(target=self.tcp_loop, args=())
-        # t1.start()
+        t1 = threading.Thread(target=self.tcp_loop, args=())
+        t1.start()
 
 
         super().__init__('minimal_subscriber')
@@ -56,7 +56,7 @@ class MinimalPublisher(Node):
     def listener_callback(self, msg):     
         x = msg.pose.pose.position.x
         y = msg.pose.pose.position.y
-        self.get_logger().info('Position: ' + str(x) + ' ' + str(y))
+        #self.get_logger().info('Position: ' + str(x) + ' ' + str(y))
     def timer_callback(self):
         #msg = String()
         #msg.data = 'Hello World: %d' % self.i
@@ -92,7 +92,7 @@ class MinimalPublisher(Node):
                 
             
             if data[0] == 97:
-                conn.send(b"spravne")
+                conn.send(b'Position: ' + str(x) + ' ' + str(y))
                 #self.velocity = 1.0
             else: 
                 conn.send(b"spatne")
