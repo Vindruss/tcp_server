@@ -28,16 +28,31 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 
+class States(Enum):
+    POSITIONING = 1
+    VEL_CONTROL = 2
+    CALIBRATION = 3
+    STOP = 4
+
 
 class MinimalPublisher(Node):
-    velocity = 0
-    x = 0.0
-    y = 0.0
-    angle = 0.0
+    goal_linear_velocity_x = 0.0
+    goal_linear_velocity_y = 0.0
+    goal_angular_velocity_z = 0.0
+    goal_position_x = 0.0
+    goal_position_y = 0.0
+    goal_angle = 0.0
+    actual_linear_velocity_x = 0.0
+    actual_linear_velocity_y = 0.0
+    actual_angular_velocity_z = 0.0
+    actual_position_x = 0.0
+    actual_position_y = 0.0
+    actual_angle = 0.0
+    state = States.STOP
     def __init__(self):
         super().__init__('minimal_publisher')
         #self.publisher_ = self.create_publisher(String, 'topic', 10)
-        self.publisher_ = self.create_publisher(Twist, 'cmd_vel_out', 10)
+        self.publisher = self.create_publisher(Twist, 'cmd_vel_out', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
@@ -47,38 +62,51 @@ class MinimalPublisher(Node):
 
 
         super().__init__('minimal_subscriber')
-        self.subscription = self.create_subscription(
+        self.subscription_odom = self.create_subscription(
             Odometry,
             'odom',
-            self.listener_callback,
+            self.listener_callback_odom,
             10)
-        self.subscription  
+        self.subscription_odom  
+
+        self.subscription_vel = self.create_subscription(
+            Odometry,
+            'velocity',
+            self.listener_callback_vel,
+            10)
+        self.subscription_vel
 
     # naslouchani aktualni pozice
-    def listener_callback(self, msg):     
-        self.x = msg.pose.pose.position.x
-        self.y = msg.pose.pose.position.y
-        self.addr = msg.pose.pose.
+    def listener_callback_odom(self, msg):     
+        self.actual_position_x = msg.pose.pose.position.x
+        self.actual_position_y = msg.pose.pose.position.y
+        self.actual_angle= msg.pose.pose.orientation.z
+
+    def listener_callback_vel(self, msg):     
+        self.actual_linear_velocity_x = msg.twist.twist.linear.x
+        self.actual_linear_velocity_y = msg.twist.twist.linear.y    
+        self.actual_angular_velocity_z = msg.twist.twist.angular.z
+    #   
+        
+        
+
 
     # posílání goal position a rychlosti   
-    def timer_callback(self):
-        #msg = String()
-        #msg.data = 'Hello World: %d' % self.i
-        #self.publisher_.publish(msg)
-        #self.get_logger().info('Publishing: "%s"' % msg.data)
-        #self.i += 1
+    def timer_callback(self):     
+        actual_position_x_bytes = int(self.actual_position_x).to_bytes(2, 'big')
+        actual_position_y_bytes = int(self.actual_position_y).to_bytes(2, 'big')
+        actual_linear_velocity_x_bytes = int(self.actual_linear_velocity_x).to_bytes(2, 'big')
+        actual_linear_velocity_y_bytes = int(self.actual_linear_velocity_y).to_bytes(2, 'big')
+        actual_angular_velocity_z_bytes = int(self.actual_angular_velocity_z).to_bytes(2, 'big')
+        actual_angle_bytes = int(self.actual_angle).to_bytes(2, 'big')
+        message = [101, actual_position_x_bytes[0], actual_position_x_bytes[1], actual_position_y_bytes[0], actual_position_y_bytes[1], actual_angle_bytes[0], actual_angle_bytes[1],
+                   actual_linear_velocity_x_bytes[0], actual_linear_velocity_x_bytes[1], actual_linear_velocity_y_bytes[0], actual_linear_velocity_y_bytes[1],
+                   actual_angular_velocity_z_bytes[0], actual_angular_velocity_z_bytes[1]]
+        conn.send((bytes(message)))
         
-        outMsg = Twist()
-        #outMsg.header = Header()
-        outMsg.linear.x = self.velocity
-        #outMsg.header.stamp = self.get_clock().now().to_msg()
-        #outMsg.header.frame_id = self.frame_id
-        #outMsg.twist = inMsg
         
-        if self.velocity > 0:
-            self.publisher_.publish(outMsg)
         
-        #self.get_logger().info('Publishing: "%s"' % "cmd_vel_out sended)
+
         
     def tcp_loop(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -105,35 +133,59 @@ class MinimalPublisher(Node):
             #urceni typu zpravy
             match data[0]:
                 case 0:
-                    
-                #1 - jed na pozici 
+                    pass
                 case 1:
-                    x = (data[1] << 8) + data[2]
-                    y = (data[3] << 8) + data[4]
-                    angle = (data[5] << 8) + data[6]
-                    set_goal_position(x,y, angle)
-                    state = States.POSITIONING
-                #2 - jed urcitou rychlosti
+                    self.goal_position_x = (data[1] << 8) + data[2]
+                    self.goal_position_y = (data[3] << 8) + data[4]
+                    self.goal_angle = (data[5] << 8) + data[6]                    
+                    self.set_goal_position(self.goal_position_x,self.goal_position_y, self.goal_angle)
+                    #state = States.POSITIONING
+                    #2 - jed urcitou rychlosti
                 case 2:
                     #nastavit rychlost (velocity)
-                    x = (data[1] << 8) + data[2]
-                    y = (data[3] << 8) + data[4]
-                    set_velocity(x,y)
-                    state = States.VEL_CONTROL
+                    self.goal_linear_velocity_x = (data[1] << 8) + data[2]
+                    self.goal_linear_velocity_y = (data[3] << 8) + data[4]
+                    self.set_velocity(self.goal_linear_velocity_x,self.goal_linear_velocity_y)
+                    #state = States.VEL_CONTROL
 
                 #3 - zahaj kalibraci 
                 case 3:
-                    #zahajeni kalibrace
-                    #state = States.CALIBRATION
+                    self.actual_angular_velocity_z = (data[1] << 8) + data[2]
+                    self.set_angular_velocity(self.actual_angular_velocity_z)
                 #4 - zastav vozitko
                 case 4:
-                    #stop_rover()
+                    self.stop_rover()
                     #state = States.STOP
-                #101 - posli aktualni pozici
-                case 101:
-                    #send_actual_position(0,0,0,0)
 
                 case _:
+                    pass
+                
+
+    def set_goal_position(x, y, angle):
+        msg = Pose()
+        msg.position.x = float(x)
+        msg.position.y = float(y)
+        msg.orientation.z = float(angle)
+        self.publisher.publish(msg)
+        
+    def set_velocity(x,y):
+        msg = Twist()
+        msg.linear.x = float(x)
+        msg.linear.y = float(y)
+        self.publisher.publish(msg)
+
+    def set_angular_velocity(z):
+        msg = Twist()
+        msg.angular.z = float(z)
+        self.publisher.publish(msg)
+
+    def stop_rover():
+        msg = Twist()
+        msg.linear.x = float(0)
+        msg.linear.y = float(0)
+        msg.angular.z = float(0)
+        self.publisher.publish(msg)
+        
 
 
 
