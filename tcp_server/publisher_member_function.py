@@ -33,13 +33,14 @@ class MinimalPublisher(Node):
     velocity = 0
     x = 0.0
     y = 0.0
+    angle = 0.0
     def __init__(self):
-        # super().__init__('minimal_publisher')
-        # #self.publisher_ = self.create_publisher(String, 'topic', 10)
-        # self.publisher_ = self.create_publisher(Twist, 'cmd_vel_out', 10)
-        # timer_period = 0.5  # seconds
-        # self.timer = self.create_timer(timer_period, self.timer_callback)
-        # self.i = 0
+        super().__init__('minimal_publisher')
+        #self.publisher_ = self.create_publisher(String, 'topic', 10)
+        self.publisher_ = self.create_publisher(Twist, 'cmd_vel_out', 10)
+        timer_period = 0.5  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.i = 0
         
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
@@ -53,10 +54,13 @@ class MinimalPublisher(Node):
             10)
         self.subscription  
 
+    # naslouchani aktualni pozice
     def listener_callback(self, msg):     
         self.x = msg.pose.pose.position.x
         self.y = msg.pose.pose.position.y
-        #self.get_logger().info('Position: ' + str(x) + ' ' + str(y))
+        self.addr = msg.pose.pose.
+
+    # posílání goal position a rychlosti   
     def timer_callback(self):
         #msg = String()
         #msg.data = 'Hello World: %d' % self.i
@@ -91,23 +95,51 @@ class MinimalPublisher(Node):
                 break
                 
             
-            if data[0] == 97:
-                conn.send(('Position: ' + str(self.x) + ' ' + str(self.y)).encode())
-                #self.velocity = 1.0
-            else: 
-                conn.send(b"spatne")
-                #self.velocity = 0.0
+            # if data[0] == 97:
+            #     conn.send(('Position: ' + str(self.x) + ' ' + str(self.y)).encode())
+            #     #self.velocity = 1.0
+            # else: 
+            #     conn.send(b"spatne")
+            #     #self.velocity = 0.0
+
+            #urceni typu zpravy
+            match data[0]:
+                case 0:
+                    
+                #1 - jed na pozici 
+                case 1:
+                    x = (data[1] << 8) + data[2]
+                    y = (data[3] << 8) + data[4]
+                    angle = (data[5] << 8) + data[6]
+                    set_goal_position(x,y, angle)
+                    state = States.POSITIONING
+                #2 - jed urcitou rychlosti
+                case 2:
+                    #nastavit rychlost (velocity)
+                    x = (data[1] << 8) + data[2]
+                    y = (data[3] << 8) + data[4]
+                    set_velocity(x,y)
+                    state = States.VEL_CONTROL
+
+                #3 - zahaj kalibraci 
+                case 3:
+                    #zahajeni kalibrace
+                    #state = States.CALIBRATION
+                #4 - zastav vozitko
+                case 4:
+                    #stop_rover()
+                    #state = States.STOP
+                #101 - posli aktualni pozici
+                case 101:
+                    #send_actual_position(0,0,0,0)
+
+                case _:
 
 
 
 def main(args=None):
     rclpy.init(args=args)
-
     minimal_publisher = MinimalPublisher()
-
-    
-    
-
     rclpy.spin(minimal_publisher)
 
     # Destroy the node explicitly
