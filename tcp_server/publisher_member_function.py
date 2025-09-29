@@ -177,6 +177,10 @@ class MinimalPublisher(Node):
         msg = Twist()
         msg.linear.x = float(x)
         msg.linear.y = float(y)
+        msg.linear.z = float(0)
+        msg.angular.x = float(0)
+        msg.angular.y = float(0)
+        msg.angular.z = float(0)
         self.publisher.publish(msg)
 
     def set_angular_velocity(z):
