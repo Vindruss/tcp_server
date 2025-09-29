@@ -174,7 +174,7 @@ class MinimalPublisher(Node):
 
     def connect(self):
         self.s.listen()
-        self.conn, addr = s.accept()
+        self.conn, addr = self.s.accept()
         print(f"Connected by {addr}")
         self.conn_state = True
 
