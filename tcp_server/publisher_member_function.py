@@ -173,7 +173,7 @@ class MinimalPublisher(Node):
         msg.orientation.z = float(angle)
         self.publisher.publish(msg)
         
-    def set_velocity(x,y):
+    def set_velocity(self, x,y):
         msg = Twist()
         msg.linear.x = float(x)
         msg.linear.y = float(y)
