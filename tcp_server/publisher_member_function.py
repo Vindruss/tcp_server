@@ -49,6 +49,7 @@ class MinimalPublisher(Node):
     actual_position_y = 0.0
     actual_angle = 0.0
     state = States.STOP
+    conn = False
     def __init__(self):
         super().__init__('tcp_server')
         #self.publisher_ = self.create_publisher(String, 'topic', 10)
@@ -87,7 +88,9 @@ class MinimalPublisher(Node):
 
 
     # posílání goal position a rychlosti   
-    def timer_callback(self):     
+    def timer_callback(self): 
+        if not self.conn:
+            return
         actual_position_x_bytes = int(self.actual_position_x).to_bytes(2, 'big')
         actual_position_y_bytes = int(self.actual_position_y).to_bytes(2, 'big')
         actual_linear_velocity_x_bytes = int(self.actual_linear_velocity_x).to_bytes(2, 'big')
@@ -112,6 +115,7 @@ class MinimalPublisher(Node):
         s.listen()
         conn, addr = s.accept()
         print(f"Connected by {addr}")
+        self.conn = True
         while True:
             data = conn.recv(1024)
             if not data:
