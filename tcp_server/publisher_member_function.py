@@ -83,7 +83,7 @@ class MinimalPublisher(Node):
         self.actual_angular_velocity_z = msg.twist.twist.angular.z
         self.actual_linear_velocity_x = msg.twist.twist.linear.x
         self.actual_linear_velocity_y = msg.twist.twist.linear.y
-        print(f"calback odom")
+        
 
     #   
         
@@ -94,6 +94,7 @@ class MinimalPublisher(Node):
     def timer_callback(self): 
         if not self.conn_state:
             return
+        print(f"actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_angle}")
         actual_position_x_bytes = int(self.actual_position_x).to_bytes(2, 'big')
         actual_position_y_bytes = int(self.actual_position_y).to_bytes(2, 'big')
         actual_linear_velocity_x_bytes = int(self.actual_linear_velocity_x).to_bytes(2, 'big')
