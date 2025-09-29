@@ -50,7 +50,8 @@ class MinimalPublisher(Node):
     actual_position_y = 0.0
     actual_angle = 0.0
     state = States.STOP
-    conn = False
+    conn_state = False
+    conn = None
     def __init__(self):
         super().__init__('tcp_server')
         #self.publisher_ = self.create_publisher(String, 'topic', 10)
@@ -90,7 +91,7 @@ class MinimalPublisher(Node):
 
     # posílání goal position a rychlosti   
     def timer_callback(self): 
-        if not self.conn:
+        if not self.conn_state:
             return
         actual_position_x_bytes = int(self.actual_position_x).to_bytes(2, 'big')
         actual_position_y_bytes = int(self.actual_position_y).to_bytes(2, 'big')
@@ -101,7 +102,7 @@ class MinimalPublisher(Node):
         message = [101, actual_position_x_bytes[0], actual_position_x_bytes[1], actual_position_y_bytes[0], actual_position_y_bytes[1], actual_angle_bytes[0], actual_angle_bytes[1],
                    actual_linear_velocity_x_bytes[0], actual_linear_velocity_x_bytes[1], actual_linear_velocity_y_bytes[0], actual_linear_velocity_y_bytes[1],
                    actual_angular_velocity_z_bytes[0], actual_angular_velocity_z_bytes[1]]
-        conn.send((bytes(message)))
+        self.conn.send((bytes(message)))
         
         
         
@@ -114,11 +115,12 @@ class MinimalPublisher(Node):
         print(f"TCP socket sonn.rectarted")
         s.bind((host, port))
         s.listen()
-        conn, addr = s.accept()
+        self.conn, addr = s.accept()
         print(f"Connected by {addr}")
-        self.conn = True
+        self.conn_state = True
+        self.conn.sendall(b'Connected to TCP server\r\n')
         while True:
-            data = conn.recv(1024)
+            data = self.conn.recv(1024)
             if not data:
                 break
                 
