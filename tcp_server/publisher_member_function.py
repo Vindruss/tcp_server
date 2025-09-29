@@ -83,6 +83,7 @@ class MinimalPublisher(Node):
         self.actual_angular_velocity_z = msg.twist.twist.angular.z
         self.actual_linear_velocity_x = msg.twist.twist.linear.x
         self.actual_linear_velocity_y = msg.twist.twist.linear.y
+        print(f"calback odom")
 
     #   
         
