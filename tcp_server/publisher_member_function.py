@@ -94,7 +94,7 @@ class MinimalPublisher(Node):
     def timer_callback(self): 
         if not self.conn_state:
             return
-        print(f"actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_angle}")
+        #print(f"actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_angle}")
         actual_position_x_bytes = int(self.actual_position_x*1000).to_bytes( 4 , byteorder='little' , signed=True )
         actual_position_y_bytes = int(self.actual_position_y*1000).to_bytes( 4 , byteorder='little' , signed=True )
         actual_linear_velocity_x_bytes = int(self.actual_linear_velocity_x*1000).to_bytes( 4 , byteorder='little' , signed=True )
@@ -147,10 +147,10 @@ class MinimalPublisher(Node):
                     #nastavit rychlost (velocity)
                     #self.goal_linear_velocity_x = (data[1] << 8) + data[2]
                     #self.goal_linear_velocity_y = (data[3] << 8) + data[4]
-                    self.goal_linear_velocity_x = int.from_bytes(data[1:5], byteorder='little', signed=True) 
-                    self.goal_linear_velocity_y = int.from_bytes(data[5:9], byteorder='little', signed=True) 
+                    x = int.from_bytes(data[1:5], byteorder='little', signed=True) 
+                    y = int.from_bytes(data[5:9], byteorder='little', signed=True) 
 
-                    self.set_velocity(self.goal_linear_velocity_x,self.goal_linear_velocity_y)
+                    self.set_velocity(x,y)
                     #state = States.VEL_CONTROL
 
                 #3 - zahaj kalibraci 
