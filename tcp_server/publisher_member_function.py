@@ -50,18 +50,16 @@ class MinimalPublisher(Node):
     actual_angle = 0.0
     state = States.STOP
     def __init__(self):
-        super().__init__('minimal_publisher')
+        super().__init__('tcp_server')
         #self.publisher_ = self.create_publisher(String, 'topic', 10)
         self.publisher = self.create_publisher(Twist, 'cmd_vel_out', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
         
-        t1 = threading.Thread(target=self.tcp_loop, args=())
-        t1.start()
+        
 
 
-        super().__init__('minimal_subscriber')
         self.subscription_odom = self.create_subscription(
             Odometry,
             'odom',
@@ -69,23 +67,20 @@ class MinimalPublisher(Node):
             10)
         self.subscription_odom  
 
-        self.subscription_vel = self.create_subscription(
-            Odometry,
-            'velocity',
-            self.listener_callback_vel,
-            10)
-        self.subscription_vel
+        t1 = threading.Thread(target=self.tcp_loop, args=())
+        t1.start()
+
+        
 
     # naslouchani aktualni pozice
     def listener_callback_odom(self, msg):     
         self.actual_position_x = msg.pose.pose.position.x
         self.actual_position_y = msg.pose.pose.position.y
         self.actual_angle= msg.pose.pose.orientation.z
-
-    def listener_callback_vel(self, msg):     
-        self.actual_linear_velocity_x = msg.twist.twist.linear.x
-        self.actual_linear_velocity_y = msg.twist.twist.linear.y    
         self.actual_angular_velocity_z = msg.twist.twist.angular.z
+        self.actual_linear_velocity_x = msg.twist.twist.linear.x
+        self.actual_linear_velocity_y = msg.twist.twist.linear.y
+
     #   
         
         
