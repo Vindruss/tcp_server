@@ -95,15 +95,13 @@ class MinimalPublisher(Node):
         if not self.conn_state:
             return
         print(f"actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_angle}")
-        actual_position_x_bytes = int(self.actual_position_x).to_bytes(2, 'big')
-        actual_position_y_bytes = int(self.actual_position_y).to_bytes(2, 'big')
-        actual_linear_velocity_x_bytes = int(self.actual_linear_velocity_x).to_bytes(2, 'big')
-        actual_linear_velocity_y_bytes = int(self.actual_linear_velocity_y).to_bytes(2, 'big')
-        actual_angular_velocity_z_bytes = int(self.actual_angular_velocity_z).to_bytes(2, 'big')
-        actual_angle_bytes = int(self.actual_angle).to_bytes(2, 'big')
-        message = [101, actual_position_x_bytes[0], actual_position_x_bytes[1], actual_position_y_bytes[0], actual_position_y_bytes[1], actual_angle_bytes[0], actual_angle_bytes[1],
-                   actual_linear_velocity_x_bytes[0], actual_linear_velocity_x_bytes[1], actual_linear_velocity_y_bytes[0], actual_linear_velocity_y_bytes[1],
-                   actual_angular_velocity_z_bytes[0], actual_angular_velocity_z_bytes[1]]
+        actual_position_x_bytes = int(self.actual_position_x*1000).to_bytes( 4 , byteorder='little' , signed=True )
+        actual_position_y_bytes = int(self.actual_position_y*1000).to_bytes( 4 , byteorder='little' , signed=True )
+        actual_linear_velocity_x_bytes = int(self.actual_linear_velocity_x*1000).to_bytes( 4 , byteorder='little' , signed=True )
+        actual_linear_velocity_y_bytes = int(self.actual_linear_velocity_y*1000).to_bytes( 4 , byteorder='little' , signed=True )
+        actual_angular_velocity_z_bytes = int(self.actual_angular_velocity_z*1000).to_bytes( 4 , byteorder='little' , signed=True )
+        actual_angle_bytes = int(self.actual_angle*1000).to_bytes( 4 , byteorder='little' , signed=True )
+        message = [101] + list(actual_position_x_bytes) + list(actual_position_y_bytes) + list(actual_angle_bytes) + list(actual_linear_velocity_x_bytes) + list(actual_linear_velocity_y_bytes) + list(actual_angular_velocity_z_bytes)
         self.conn.send((bytes(message)))
         
         
