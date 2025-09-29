@@ -112,17 +112,23 @@ class MinimalPublisher(Node):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         host = '10.0.100.145'
         port = 8899
-        print(f"TCP socket sonn.rectarted")
         s.bind((host, port))
         s.listen()
         self.conn, addr = s.accept()
         print(f"Connected by {addr}")
         self.conn_state = True
-        self.conn.sendall(b'Connected to TCP server\r\n')
         while True:
+            
             data = self.conn.recv(1024)
             if not data:
+                self.conn_state = False
+                print("Connection lost")
+                s.listen()
+                self.conn, addr = s.accept()
+                print(f"Connected by {addr}")
+                self.conn_state = True
                 break
+                
                 
             
             # if data[0] == 97:
