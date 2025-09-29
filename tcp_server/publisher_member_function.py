@@ -147,10 +147,10 @@ class MinimalPublisher(Node):
                     #nastavit rychlost (velocity)
                     #self.goal_linear_velocity_x = (data[1] << 8) + data[2]
                     #self.goal_linear_velocity_y = (data[3] << 8) + data[4]
-                    x = int.from_bytes(data[1:5], byteorder='little', signed=True) 
-                    y = int.from_bytes(data[5:9], byteorder='little', signed=True) 
-
-                    self.set_velocity(x,y)
+                    x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/100.0
+                    y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/100.0 
+                    z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/100.0 
+                    self.set_velocity(x,y, z)
                     #state = States.VEL_CONTROL
 
                 #3 - zahaj kalibraci 
@@ -173,14 +173,14 @@ class MinimalPublisher(Node):
         msg.orientation.z = float(angle)
         self.publisher.publish(msg)
         
-    def set_velocity(self, x,y):
+    def set_velocity(self, x, y, z):
         msg = Twist()
         msg.linear.x = float(x)
         msg.linear.y = float(y)
         msg.linear.z = float(0)
         msg.angular.x = float(0)
         msg.angular.y = float(0)
-        msg.angular.z = float(0)
+        msg.angular.z = float(z)
         self.publisher.publish(msg)
 
     def set_angular_velocity(z):
