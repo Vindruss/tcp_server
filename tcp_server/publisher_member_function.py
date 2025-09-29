@@ -15,6 +15,7 @@
 import rclpy
 import threading
 import socket
+from enum import Enum
 
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped
