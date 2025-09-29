@@ -109,68 +109,75 @@ class MinimalPublisher(Node):
 
         
     def tcp_loop(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         host = '10.0.100.145'
         port = 8899
-        s.bind((host, port))
-        s.listen()
+        self.s.bind((host, port))
+        self.connect()
+        while True:
+            try:
+                data = self.conn.recv(1024)
+                if not data:
+                    self.conn_state = False
+                    print("Client disconnected")
+                    self.conn.close()
+                    self.connect()
+                    continue
+                    
+                    
+                
+                # if data[0] == 97:
+                #     conn.send(('Position: ' + str(self.x) + ' ' + str(self.y)).encode())
+                #     #self.velocity = 1.0
+                # else: 
+                #     conn.send(b"spatne")
+                #     #self.velocity = 0.0
+
+                #urceni typu zpravy
+                match data[0]:
+                    case 0:
+                        pass
+                    case 1:
+                        self.goal_position_x = (data[1] << 8) + data[2]
+                        self.goal_position_y = (data[3] << 8) + data[4]
+                        self.goal_angle = (data[5] << 8) + data[6]                    
+                        self.set_goal_position(self.goal_position_x,self.goal_position_y, self.goal_angle)
+                        #state = States.POSITIONING
+                        #2 - jed urcitou rychlosti
+                    case 2:
+                        #nastavit rychlost (velocity)
+                        #self.goal_linear_velocity_x = (data[1] << 8) + data[2]
+                        #self.goal_linear_velocity_y = (data[3] << 8) + data[4]
+                        x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/100.0
+                        y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/100.0 
+                        z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/100.0 
+                        self.set_velocity(x,y, z)
+                        #state = States.VEL_CONTROL
+
+                    #3 - zahaj kalibraci 
+                    case 3:
+                        self.actual_angular_velocity_z = (data[1] << 8) + data[2]
+                        self.set_angular_velocity(self.actual_angular_velocity_z)
+                    #4 - zastav vozitko
+                    case 4:
+                        self.stop_rover()
+                        #state = States.STOP
+
+                    case _:
+                        pass
+            except:
+                self.conn_state = False
+                print("Client disconnected")
+                self.conn.close()
+                self.connect()
+                continue
+
+    def connect(self):
+        self.s.listen()
         self.conn, addr = s.accept()
         print(f"Connected by {addr}")
         self.conn_state = True
-        while True:
-            
-            data = self.conn.recv(1024)
-            if not data:
-                self.conn_state = False
-                print("Connection lost")
-                s.listen()
-                self.conn, addr = s.accept()
-                print(f"Connected by {addr}")
-                self.conn_state = True
-                continue
-                
-                
-            
-            # if data[0] == 97:
-            #     conn.send(('Position: ' + str(self.x) + ' ' + str(self.y)).encode())
-            #     #self.velocity = 1.0
-            # else: 
-            #     conn.send(b"spatne")
-            #     #self.velocity = 0.0
 
-            #urceni typu zpravy
-            match data[0]:
-                case 0:
-                    pass
-                case 1:
-                    self.goal_position_x = (data[1] << 8) + data[2]
-                    self.goal_position_y = (data[3] << 8) + data[4]
-                    self.goal_angle = (data[5] << 8) + data[6]                    
-                    self.set_goal_position(self.goal_position_x,self.goal_position_y, self.goal_angle)
-                    #state = States.POSITIONING
-                    #2 - jed urcitou rychlosti
-                case 2:
-                    #nastavit rychlost (velocity)
-                    #self.goal_linear_velocity_x = (data[1] << 8) + data[2]
-                    #self.goal_linear_velocity_y = (data[3] << 8) + data[4]
-                    x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/100.0
-                    y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/100.0 
-                    z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/100.0 
-                    self.set_velocity(x,y, z)
-                    #state = States.VEL_CONTROL
-
-                #3 - zahaj kalibraci 
-                case 3:
-                    self.actual_angular_velocity_z = (data[1] << 8) + data[2]
-                    self.set_angular_velocity(self.actual_angular_velocity_z)
-                #4 - zastav vozitko
-                case 4:
-                    self.stop_rover()
-                    #state = States.STOP
-
-                case _:
-                    pass
-                
 
     def set_goal_position(x, y, angle):
         msg = Pose()
