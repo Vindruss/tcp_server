@@ -55,7 +55,7 @@ class MinimalPublisher(Node):
     def __init__(self):
         super().__init__('tcp_server')
         #self.publisher_ = self.create_publisher(String, 'topic', 10)
-        self.publisher = self.create_publisher(Twist, 'cmd_vel_out', 10)
+        self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
@@ -145,8 +145,11 @@ class MinimalPublisher(Node):
                     #2 - jed urcitou rychlosti
                 case 2:
                     #nastavit rychlost (velocity)
-                    self.goal_linear_velocity_x = (data[1] << 8) + data[2]
-                    self.goal_linear_velocity_y = (data[3] << 8) + data[4]
+                    #self.goal_linear_velocity_x = (data[1] << 8) + data[2]
+                    #self.goal_linear_velocity_y = (data[3] << 8) + data[4]
+                    self.goal_linear_velocity_x = int.from_bytes(data[1:5], byteorder='little', signed=True) 
+                    self.goal_linear_velocity_y = int.from_bytes(data[5:9], byteorder='little', signed=True) 
+
                     self.set_velocity(self.goal_linear_velocity_x,self.goal_linear_velocity_y)
                     #state = States.VEL_CONTROL
 
