@@ -127,7 +127,7 @@ class MinimalPublisher(Node):
                 self.conn, addr = s.accept()
                 print(f"Connected by {addr}")
                 self.conn_state = True
-                break
+                continue
                 
                 
             
