@@ -145,7 +145,7 @@ class MinimalPublisher(Node):
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/1000.0
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0 
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0                  
-                        self.set_goal_position(x,y, z)
+                        self.set_goal_position(x, y, z)
                         #state = States.POSITIONING
                         #2 - jed urcitou rychlosti
                     case 2:
@@ -168,7 +168,8 @@ class MinimalPublisher(Node):
 
                     case _:
                         pass
-            except:
+            except Exception as e:
+                print(f"Exception: {e}")
                 self.conn_state = False
                 print("Client disconnected")
                 self.conn.close()
@@ -183,6 +184,7 @@ class MinimalPublisher(Node):
 
 
     def set_goal_position(self, x, y, angle):
+        print(f"set goal position function")
         msg = PoseStamped()
         header = Header()   
         header.stamp = self.get_clock().now().to_msg()
