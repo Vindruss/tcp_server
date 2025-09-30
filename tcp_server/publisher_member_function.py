@@ -145,7 +145,7 @@ class MinimalPublisher(Node):
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/1000.0
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0 
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0                  
-                        self.set_goal_position(self.goal_position_x,self.goal_position_y, self.goal_angle)
+                        self.set_goal_position(x,y, z)
                         #state = States.POSITIONING
                         #2 - jed urcitou rychlosti
                     case 2:
