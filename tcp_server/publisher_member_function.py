@@ -64,11 +64,7 @@ class MinimalPublisher(Node):
         self.publisher_initial_pose = self.create_publisher(PoseWithCovarianceStamped, 'initialpose', 10)
         
 
-        self._action_server = ActionServer(
-            self,
-            GoalStatus,
-            'fibonacci',
-            self.execute_callback)
+        
 
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -105,7 +101,7 @@ class MinimalPublisher(Node):
         self.actual_linear_velocity_y = msg.twist.twist.linear.y
         
     def listener_callback_goal_status(self, msg):
-        if len(msg.status_list) == 0:
+        if len(msg.) == 0:
             return
         match msg.status_list[-1].status:
             case 1:
