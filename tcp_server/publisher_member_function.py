@@ -20,6 +20,7 @@ from enum import Enum
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry 
 
 from std_msgs.msg import Header
@@ -55,7 +56,9 @@ class MinimalPublisher(Node):
     def __init__(self):
         super().__init__('tcp_server')
         #self.publisher_ = self.create_publisher(String, 'topic', 10)
-        self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.publisher_twist = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.publisher_pose = self.create_publisher(PoseStamped, 'goal_pose', 10)
+
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
@@ -138,16 +141,14 @@ class MinimalPublisher(Node):
                     case 0:
                         pass
                     case 1:
-                        self.goal_position_x = (data[1] << 8) + data[2]
-                        self.goal_position_y = (data[3] << 8) + data[4]
-                        self.goal_angle = (data[5] << 8) + data[6]                    
+                        x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/1000.0
+                        y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0 
+                        z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0                  
                         self.set_goal_position(self.goal_position_x,self.goal_position_y, self.goal_angle)
                         #state = States.POSITIONING
                         #2 - jed urcitou rychlosti
                     case 2:
                         #nastavit rychlost (velocity)
-                        #self.goal_linear_velocity_x = (data[1] << 8) + data[2]
-                        #self.goal_linear_velocity_y = (data[3] << 8) + data[4]
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/100.0
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/100.0 
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/100.0 
@@ -179,12 +180,17 @@ class MinimalPublisher(Node):
         self.conn_state = True
 
 
-    def set_goal_position(x, y, angle):
-        msg = Pose()
+    def set_goal_position(self, x, y, angle):
+        msg = PoseStamped()
+        header = Header()   
+        header.stamp = self.get_clock().now().to_msg()
+        header.frame_id = "map" 
+        msg.header = header
         msg.position.x = float(x)
         msg.position.y = float(y)
         msg.orientation.z = float(angle)
-        self.publisher.publish(msg)
+        
+        self.publisher_pose.publish(msg)
         
     def set_velocity(self, x, y, z):
         msg = Twist()
@@ -194,7 +200,7 @@ class MinimalPublisher(Node):
         msg.angular.x = float(0)
         msg.angular.y = float(0)
         msg.angular.z = float(z)
-        self.publisher.publish(msg)
+        self.publisher_twist.publish(msg)
 
     def set_angular_velocity(z):
         msg = Twist()
