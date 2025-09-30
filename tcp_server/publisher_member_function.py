@@ -141,6 +141,7 @@ class MinimalPublisher(Node):
                     case 0:
                         pass
                     case 1:
+                        print("GOAL POSITION")
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/1000.0
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0 
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0                  
@@ -149,6 +150,7 @@ class MinimalPublisher(Node):
                         #2 - jed urcitou rychlosti
                     case 2:
                         #nastavit rychlost (velocity)
+                        print("VELOCITY")
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/100.0
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/100.0 
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/100.0 
