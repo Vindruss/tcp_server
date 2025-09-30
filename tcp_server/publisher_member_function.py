@@ -190,9 +190,9 @@ class MinimalPublisher(Node):
         header.stamp = self.get_clock().now().to_msg()
         header.frame_id = "map" 
         msg.header = header
-        msg.position.x = float(x)
-        msg.position.y = float(y)
-        msg.orientation.z = float(angle)
+        msg.pose.position.x = float(x)
+        msg.pose.position.y = float(y)
+        msg.pose.orientation.z = float(angle)
         print(f"Goal pos: {x} {y} {angle}")
         self.publisher_pose.publish(msg)
         
