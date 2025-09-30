@@ -101,19 +101,19 @@ class MinimalPublisher(Node):
     def listener_callback_goal_status(self, msg):
         if len(msg.status_list) == 0:
             return
-        match msg.status_list[-1].status:
+        match msg.status_list[0].status:
             case 1:
-                print("Goal accepted")
+                print("GOAL ACCEPTED")
             case 2:
-                print("Goal is being processed")
+                print("GOAL IS EXECUTING")
             case 3:
-                print("Goal reached")
+                print("GOAL IS CANCELING")
             case 4:
-                print("Goal canceled")
+                print("GOAL SUCCEDED")
             case 5:
-                print("Goal rejected")
+                print("GOAL ABORTED")
             case 6:
-                print("Goal aborted")
+                print("GOAL CANCELED")
 
             case _:
                 pass
