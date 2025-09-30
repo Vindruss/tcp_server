@@ -191,7 +191,7 @@ class MinimalPublisher(Node):
         msg.position.x = float(x)
         msg.position.y = float(y)
         msg.orientation.z = float(angle)
-        
+        print(f"Goal pos: {x} {y} {angle}")
         self.publisher_pose.publish(msg)
         
     def set_velocity(self, x, y, z):
