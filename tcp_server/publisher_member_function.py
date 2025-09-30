@@ -64,8 +64,6 @@ class MinimalPublisher(Node):
         self.publisher_initial_pose = self.create_publisher(PoseWithCovarianceStamped, 'initialpose', 10)
         
 
-        
-
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
@@ -101,7 +99,7 @@ class MinimalPublisher(Node):
         self.actual_linear_velocity_y = msg.twist.twist.linear.y
         
     def listener_callback_goal_status(self, msg):
-        if len(msg.) == 0:
+        if len(msg.status_list) == 0:
             return
         match msg.status_list[-1].status:
             case 1:
@@ -116,6 +114,7 @@ class MinimalPublisher(Node):
                 print("Goal rejected")
             case 6:
                 print("Goal aborted")
+
             case _:
                 pass
         #print(f"Goal status: {msg.status_list[-1].status}")
