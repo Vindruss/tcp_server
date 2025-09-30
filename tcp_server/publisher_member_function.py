@@ -101,7 +101,7 @@ class MinimalPublisher(Node):
     def listener_callback_goal_status(self, msg):
         if len(msg.status_list) == 0:
             return
-        match msg.status_list[0].status:
+        match msg.status_list[-1].status:
             case 1:
                 print("GOAL ACCEPTED")
             case 2:
