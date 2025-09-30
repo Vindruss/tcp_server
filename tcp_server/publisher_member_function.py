@@ -21,7 +21,10 @@ from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry 
+from rclpy.action import ActionServer
+from action_msgs.msg import GoalStatusArray
 
 from std_msgs.msg import Header
 
@@ -58,6 +61,14 @@ class MinimalPublisher(Node):
         #self.publisher_ = self.create_publisher(String, 'topic', 10)
         self.publisher_twist = self.create_publisher(Twist, 'cmd_vel', 10)
         self.publisher_pose = self.create_publisher(PoseStamped, 'goal_pose', 10)
+        self.publisher_initial_pose = self.create_publisher(PoseWithCovarianceStamped, 'initialpose', 10)
+        
+
+        self._action_server = ActionServer(
+            self,
+            GoalStatus,
+            'fibonacci',
+            self.execute_callback)
 
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -73,6 +84,12 @@ class MinimalPublisher(Node):
             10)
         self.subscription_odom  
 
+        self.subscription_goal_status = self.create_subscription(
+            GoalStatusArray,
+            'navigate_to_pose/_action/status',
+            self.listener_callback_goal_status,
+            10)
+
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
 
@@ -87,7 +104,25 @@ class MinimalPublisher(Node):
         self.actual_linear_velocity_x = msg.twist.twist.linear.x
         self.actual_linear_velocity_y = msg.twist.twist.linear.y
         
-
+    def listener_callback_goal_status(self, msg):
+        if len(msg.status_list) == 0:
+            return
+        match msg.status_list[-1].status:
+            case 1:
+                print("Goal accepted")
+            case 2:
+                print("Goal is being processed")
+            case 3:
+                print("Goal reached")
+            case 4:
+                print("Goal canceled")
+            case 5:
+                print("Goal rejected")
+            case 6:
+                print("Goal aborted")
+            case _:
+                pass
+        #print(f"Goal status: {msg.status_list[-1].status}")
     #   
         
         
@@ -140,6 +175,7 @@ class MinimalPublisher(Node):
                 match data[0]:
                     case 0:
                         pass
+                    #1 - jed na pozici
                     case 1:
                         print("GOAL POSITION")
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/1000.0
@@ -147,9 +183,8 @@ class MinimalPublisher(Node):
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0                  
                         self.set_goal_position(x, y, z)
                         #state = States.POSITIONING
-                        #2 - jed urcitou rychlosti
+                    #2 - jed urcitou rychlosti
                     case 2:
-                        #nastavit rychlost (velocity)
                         print("VELOCITY")
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/100.0
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/100.0 
@@ -157,14 +192,19 @@ class MinimalPublisher(Node):
                         self.set_velocity(x,y, z)
                         #state = States.VEL_CONTROL
 
-                    #3 - zahaj kalibraci 
-                    case 3:
-                        self.actual_angular_velocity_z = (data[1] << 8) + data[2]
-                        self.set_angular_velocity(self.actual_angular_velocity_z)
                     #4 - zastav vozitko
                     case 4:
+                        print("STOP")
                         self.stop_rover()
                         #state = States.STOP
+                    #5 - startovaci pozice    
+                    case 5:
+                        print("START POSITION")
+                        x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/1000.0
+                        y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0 
+                        z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0 
+                        self.set_initial_pose(x, y, z)
+
 
                     case _:
                         pass
@@ -182,9 +222,19 @@ class MinimalPublisher(Node):
         print(f"Connected by {addr}")
         self.conn_state = True
 
+    def set_initial_pose(self, x, y, angle):
+        msg = PoseWithCovarianceStamped()
+        header = Header()   
+        header.stamp = self.get_clock().now().to_msg()
+        header.frame_id = "map" 
+        msg.header = header
+        msg.pose.pose.position.x = float(x)
+        msg.pose.pose.position.y = float(y)
+        msg.pose.pose.orientation.z = float(angle)
+        print(f"Initial pos: {x} {y} {angle}")
+        self.publisher_initial_pose.publish(msg)
 
     def set_goal_position(self, x, y, angle):
-        print(f"set goal position function")
         msg = PoseStamped()
         header = Header()   
         header.stamp = self.get_clock().now().to_msg()
@@ -204,19 +254,19 @@ class MinimalPublisher(Node):
         msg.angular.x = float(0)
         msg.angular.y = float(0)
         msg.angular.z = float(z)
+        print(f"Velocity: {x} {y} {z}")
         self.publisher_twist.publish(msg)
 
-    def set_angular_velocity(z):
-        msg = Twist()
-        msg.angular.z = float(z)
-        self.publisher.publish(msg)
-
-    def stop_rover():
+    def stop_rover(self):
         msg = Twist()
         msg.linear.x = float(0)
         msg.linear.y = float(0)
+        msg.linear.z = float(0)
+        msg.angular.x = float(0)
+        msg.angular.y = float(0)
         msg.angular.z = float(0)
-        self.publisher.publish(msg)
+        print(f"Velocity: {x} {y} {z}")
+        self.publisher_twist.publish(msg)
         
 
 
