@@ -117,7 +117,14 @@ class MinimalPublisher(Node):
 
             case _:
                 pass
-        #print(f"Goal status: {msg.status_list[-1].status}")
+
+        if not self.conn_state:
+            return
+        #print(f"actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_angle}")
+        
+        message = [102] + [msg.status_list[-1].status] 
+        self.conn.send((bytes(message)))
+        
     #   
         
         
