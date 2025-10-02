@@ -131,7 +131,8 @@ class MinimalPublisher(Node):
             if(i + chunk_size > len(signed_data)):
                 chunk_size = len(signed_data) - i
             chunk = [103] + signed_data[i:i+chunk_size]
-            self.conn.send((bytes(chunk)))
+            self.conn.sendall((bytes(chunk)))
+            
 
         
 
