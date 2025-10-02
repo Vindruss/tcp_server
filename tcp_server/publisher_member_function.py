@@ -122,7 +122,7 @@ class MinimalPublisher(Node):
         message = [103] + list(map_resolution_bytes) + list(map_width_bytes) + list(map_height_bytes) + list(map_origin_x_bytes) + list(map_origin_y_bytes) + list(signed_data)
         if not self.conn_state:
             return
-        self.conn.send((bytes(message)))   
+        self.conn.sendall((bytes(message)))   
         
 
     # naslouchani aktualni pozice
