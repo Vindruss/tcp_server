@@ -119,10 +119,19 @@ class MinimalPublisher(Node):
             
 
         print(f"Map: {msg.info.resolution} {msg.info.width} {msg.info.height} {msg.info.origin.position.x} {msg.info.origin.position.y} {len(msg.data)}")
-        message = [103] + list(map_resolution_bytes) + list(map_width_bytes) + list(map_height_bytes) + list(map_origin_x_bytes) + list(map_origin_y_bytes) + list(signed_data)
+        message = [103] + list(map_resolution_bytes) + list(map_width_bytes) + list(map_height_bytes) + list(map_origin_x_bytes) + list(map_origin_y_bytes)
         if not self.conn_state:
             return
+        # send header
         self.conn.sendall((bytes(message)))   
+        # send map data in chunks of 1024 bytes
+        chunk_size = 1024
+        for i in range(0, len(signed_data), chunk_size):
+            if(i + chunk_size > len(signed_data)):
+                chunk_size = len(signed_data) - i
+            chunk = [103] + signed_data[i:i+chunk_size]
+            self.conn.sendall((bytes(chunk)))
+
         
 
     # naslouchani aktualni pozice
