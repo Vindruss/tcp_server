@@ -125,13 +125,24 @@ class MinimalPublisher(Node):
             return
         # send header
         self.conn.sendall((bytes(message)))   
+
+        #send obstacle data as points
+        for x in range(msg.info.width):
+            for y in range(msg.info.height):
+                index = x + y * msg.info.width
+                if msg.data[index] > 50:
+                    point_x_bytes = int(x).to_bytes( 4 , byteorder='little' , signed=True )
+                    point_y_bytes = int(y).to_bytes( 4 , byteorder='little' , signed=True )
+                    point_message = [104] + list(point_x_bytes) + list(point_y_bytes)
+                    self.conn.sendall((bytes(point_message)))
+
         # send map data in chunks of 1024 bytes
-        chunk_size = 500
-        for i in range(0, len(signed_data), chunk_size):
-            if(i + chunk_size > len(signed_data)):
-                chunk_size = len(signed_data) - i
-            chunk = [103] + signed_data[i:i+chunk_size]
-            self.conn.sendall((bytes(chunk)))
+        # chunk_size = 500
+        # for i in range(0, len(signed_data), chunk_size):
+        #     if(i + chunk_size > len(signed_data)):
+        #         chunk_size = len(signed_data) - i
+        #     chunk = [103] + signed_data[i:i+chunk_size]
+        #     self.conn.sendall((bytes(chunk)))
             
 
         
@@ -170,7 +181,7 @@ class MinimalPublisher(Node):
         #print(f"actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_angle}")
         
         message = [102] + [msg.status_list[-1].status] 
-        self.conn.send((bytes(message)))
+        self.conn.sendall((bytes(message)))
         
     #   
         
@@ -189,7 +200,7 @@ class MinimalPublisher(Node):
         actual_angular_velocity_z_bytes = int(self.actual_angular_velocity_z*1000).to_bytes( 4 , byteorder='little' , signed=True )
         actual_angle_bytes = int(self.actual_angle*1000).to_bytes( 4 , byteorder='little' , signed=True )
         message = [101] + list(actual_position_x_bytes) + list(actual_position_y_bytes) + list(actual_angle_bytes) + list(actual_linear_velocity_x_bytes) + list(actual_linear_velocity_y_bytes) + list(actual_angular_velocity_z_bytes)
-        self.conn.send((bytes(message)))
+        self.conn.sendall((bytes(message)))
         
         
         
