@@ -100,8 +100,7 @@ class MinimalPublisher(Node):
         t1.start()
 
     def listener_callback_map(self, msg):
-        if not self.conn_state:
-            return
+        
         #print(f"actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_angle}")
         map_resolution_bytes = int(msg.info.resolution).to_bytes( 4 , byteorder='little' , signed=True )
         map_width_bytes = int(msg.info.width).to_bytes( 4 , byteorder='little' , signed=True )
@@ -109,8 +108,10 @@ class MinimalPublisher(Node):
         map_origin_x_bytes = int(msg.info.origin.position.x).to_bytes( 4 , byteorder='little' , signed=True )
         map_origin_y_bytes = int(msg.info.origin.position.y).to_bytes( 4 , byteorder='little' , signed=True )
         print(f"Map: {msg.info.resolution} {msg.info.width} {msg.info.height} {msg.info.origin.position.x} {msg.info.origin.position.y} {len(msg.data)}")
-        message = [103] + list(map_resolution_bytes) + list(map_width_bytes) + list(map_height_bytes) + list(map_origin_x_bytes) + list(map_origin_y_bytes) + msg.data
-        #self.conn.send((bytes(message)))   
+        message = [103] + map_resolution_bytes + map_width_bytes + map_height_bytes + map_origin_x_bytes + map_origin_y_bytes + msg.data
+        if not self.conn_state:
+            return
+        self.conn.send((bytes(message)))   
         
 
     # naslouchani aktualni pozice
