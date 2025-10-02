@@ -107,6 +107,7 @@ class MinimalPublisher(Node):
         map_height_bytes = int(msg.info.height).to_bytes( 4 , byteorder='little' , signed=True )
         map_origin_x_bytes = int(msg.info.origin.position.x*1000).to_bytes( 4 , byteorder='little' , signed=True )
         map_origin_y_bytes = int(msg.info.origin.position.y*1000).to_bytes( 4 , byteorder='little' , signed=True )
+        
 
         # convert msg.data to signed bytes
         signed_data = []
@@ -125,12 +126,12 @@ class MinimalPublisher(Node):
         # send header
         self.conn.sendall((bytes(message)))   
         # send map data in chunks of 1024 bytes
-        chunk_size = 1024
+        chunk_size = 500
         for i in range(0, len(signed_data), chunk_size):
             if(i + chunk_size > len(signed_data)):
                 chunk_size = len(signed_data) - i
             chunk = [103] + signed_data[i:i+chunk_size]
-            self.conn.sendall((bytes(chunk)))
+            self.conn.send((bytes(chunk)))
 
         
 
