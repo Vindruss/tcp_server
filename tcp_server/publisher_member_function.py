@@ -25,6 +25,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry 
 from rclpy.action import ActionServer
 from action_msgs.msg import GoalStatusArray
+from nav_msgs.msg import OccupancyGrid
 
 from std_msgs.msg import Header
 
@@ -62,6 +63,7 @@ class MinimalPublisher(Node):
         self.publisher_twist = self.create_publisher(Twist, 'cmd_vel', 10)
         self.publisher_pose = self.create_publisher(PoseStamped, 'goal_pose', 10)
         self.publisher_initial_pose = self.create_publisher(PoseWithCovarianceStamped, 'initialpose', 10)
+
         
 
         timer_period = 0.5  # seconds
@@ -83,10 +85,32 @@ class MinimalPublisher(Node):
             'navigate_to_pose/_action/status',
             self.listener_callback_goal_status,
             10)
+        self.subscription_goal_status
+
+        self.subscription_map = self.create_subscription(
+            OccupancyGrid,
+            'map',
+            self.listener_callback_map,
+            10)
+        self.subscription_map
+
+
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
 
+    def listener_callback_map(self, msg):
+        if not self.conn_state:
+            return
+        #print(f"actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_angle}")
+        map_resolution_bytes = int(msg.info.resolution).to_bytes( 4 , byteorder='little' , signed=True )
+        map_width_bytes = int(msg.info.width).to_bytes( 4 , byteorder='little' , signed=True )
+        map_height_bytes = int(msg.info.height).to_bytes( 4 , byteorder='little' , signed=True )
+        map_origin_x_bytes = int(msg.info.origin.position.x).to_bytes( 4 , byteorder='little' , signed=True )
+        map_origin_y_bytes = int(msg.info.origin.position.y).to_bytes( 4 , byteorder='little' , signed=True )
+        print(f"Map: {msg.info.resolution} {msg.info.width} {msg.info.height} {msg.info.origin.position.x} {msg.info.origin.position.y}")
+        message = [103] + list(map_resolution_bytes) + list(map_width_bytes) + list(map_height_bytes) + list(map_origin_x_bytes) + list(map_origin_y_bytes) + msg.data
+        //self.conn.send((bytes(message)))   
         
 
     # naslouchani aktualni pozice
