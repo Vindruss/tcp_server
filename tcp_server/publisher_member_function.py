@@ -111,7 +111,7 @@ class MinimalPublisher(Node):
         # convert msg.data to signed bytes
         signed_data = []
         for i in msg.data:
-            i = int(msg.data).to_bytes(1, byteorder='little', signed=True)
+            i = int(i).to_bytes(1, byteorder='little', signed=True)
             signed_data.append(i)
             
             
