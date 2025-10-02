@@ -107,8 +107,17 @@ class MinimalPublisher(Node):
         map_height_bytes = int(msg.info.height).to_bytes( 4 , byteorder='little' , signed=True )
         map_origin_x_bytes = int(msg.info.origin.position.x*1000).to_bytes( 4 , byteorder='little' , signed=True )
         map_origin_y_bytes = int(msg.info.origin.position.y*1000).to_bytes( 4 , byteorder='little' , signed=True )
+
+        # convert msg.data to signed bytes
+        signed_data = []
+        for i in msg.data:
+            i = msg.data.to_bytes(1, byteorder='little', signed=True)
+            signed_data.append(i)
+            
+            
+
         print(f"Map: {msg.info.resolution} {msg.info.width} {msg.info.height} {msg.info.origin.position.x} {msg.info.origin.position.y} {len(msg.data)}")
-        message = [103] + list(map_resolution_bytes) + list(map_width_bytes) + list(map_height_bytes) + list(map_origin_x_bytes) + list(map_origin_y_bytes)
+        message = [103] + list(map_resolution_bytes) + list(map_width_bytes) + list(map_height_bytes) + list(map_origin_x_bytes) + list(map_origin_y_bytes) + list(signed_data)
         if not self.conn_state:
             return
         self.conn.send((bytes(message)))   
