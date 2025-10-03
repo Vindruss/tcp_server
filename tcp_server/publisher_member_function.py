@@ -127,22 +127,22 @@ class MinimalPublisher(Node):
         self.conn.sendall((bytes(message)))   
 
         #send obstacle data as points
-        for x in range(msg.info.width):
-            for y in range(msg.info.height):
-                index = x + y * msg.info.width
-                if msg.data[index] > 50:
-                    point_x_bytes = int(x).to_bytes( 4 , byteorder='little' , signed=True )
-                    point_y_bytes = int(y).to_bytes( 4 , byteorder='little' , signed=True )
-                    point_message = [104] + list(point_x_bytes) + list(point_y_bytes)
-                    self.conn.sendall((bytes(point_message)))
+        # for x in range(msg.info.width):
+        #     for y in range(msg.info.height):
+        #         index = x + y * msg.info.width
+        #         if msg.data[index] > 50:
+        #             point_x_bytes = int(x).to_bytes( 4 , byteorder='little' , signed=True )
+        #             point_y_bytes = int(y).to_bytes( 4 , byteorder='little' , signed=True )
+        #             point_message = [104] + list(point_x_bytes) + list(point_y_bytes)
+        #             self.conn.sendall((bytes(point_message)))
 
-        # send map data in chunks of 1024 bytes
-        # chunk_size = 500
-        # for i in range(0, len(signed_data), chunk_size):
-        #     if(i + chunk_size > len(signed_data)):
-        #         chunk_size = len(signed_data) - i
-        #     chunk = [103] + signed_data[i:i+chunk_size]
-        #     self.conn.sendall((bytes(chunk)))
+        #send map data in chunks of 1024 bytes
+        chunk_size = 500
+        for i in range(0, len(signed_data), chunk_size):
+            if(i + chunk_size > len(signed_data)):
+                chunk_size = len(signed_data) - i
+            chunk = [103] + signed_data[i:i+chunk_size]
+            self.conn.sendall((bytes(chunk)))
             
 
         
