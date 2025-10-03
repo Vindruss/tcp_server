@@ -141,7 +141,7 @@ class MinimalPublisher(Node):
         for i in range(0, len(signed_data), chunk_size):
             if(i + chunk_size > len(signed_data)):
                 chunk_size = len(signed_data) - i
-            chunk = [103] + signed_data[i:i+chunk_size]
+            chunk = [104] + signed_data[i:i+chunk_size]
             self.conn.sendall((bytes(chunk)))
             
 
