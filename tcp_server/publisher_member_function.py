@@ -54,8 +54,7 @@ class MinimalPublisher(Node):
     actual_angular_velocity_z = 0.0
     actual_position_x = 0.0
     actual_position_y = 0.0
-    actual_position_angular_x = 0.0
-    actual_position_angular_y = 0.0
+    actual_angle = 0.0
     state = States.STOP
     conn_state = False
     conn = None
@@ -153,15 +152,14 @@ class MinimalPublisher(Node):
     def listener_callback_odom(self, msg):     
         self.actual_position_x = msg.pose.pose.position.x
         self.actual_position_y = msg.pose.pose.position.y
-        self.actual_position_angular_x= msg.pose.pose.orientation.x
-        self.actual_position_angular_y= msg.pose.pose.orientation.y
         self.actual_angular_velocity_z = msg.twist.twist.angular.z
         self.actual_linear_velocity_x = msg.twist.twist.linear.x
         self.actual_linear_velocity_y = msg.twist.twist.linear.y
 
         quaternion_list = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
-        (self.roll, self.pitch, self.yaw) = euler_from_quaternion(quaternion_list)
-        print(f"Orientation: {self.roll} {self.pitch} {self.yaw}")
+        (roll, pitch, yaw) = euler_from_quaternion(quaternion_list)
+        self.actual_angle = yaw
+
         
     def listener_callback_goal_status(self, msg):
         if len(msg.status_list) == 0:
@@ -205,10 +203,8 @@ class MinimalPublisher(Node):
         actual_linear_velocity_x_bytes = int(self.actual_linear_velocity_x*1000).to_bytes( 4 , byteorder='little' , signed=True )
         actual_linear_velocity_y_bytes = int(self.actual_linear_velocity_y*1000).to_bytes( 4 , byteorder='little' , signed=True )
         actual_angular_velocity_z_bytes = int(self.actual_angular_velocity_z*1000).to_bytes( 4 , byteorder='little' , signed=True )
-        actual_position_angular_x_bytes = int(self.actual_position_angular_x*1000).to_bytes( 4 , byteorder='little' , signed=True )
-        actual_position_angular_y_bytes = int(self.actual_position_angular_y*1000).to_bytes( 4 , byteorder='little' , signed=True )
-        print(f"Actual pos: {self.actual_position_x} {self.actual_position_y} {self.actual_position_angular_x} {self.actual_position_angular_y}")
-        message = [101] + list(actual_position_x_bytes) + list(actual_position_y_bytes) + list(actual_position_angular_x_bytes) + list(actual_position_angular_y_bytes) + list(actual_linear_velocity_x_bytes) + list(actual_linear_velocity_y_bytes) + list(actual_angular_velocity_z_bytes)
+        actual_angle_bytes = int(self.actual_angle*1000).to_bytes( 4 , byteorder='little' , signed=True )
+        message = [101] + list(actual_position_x_bytes) + list(actual_position_y_bytes) + list(actual_angle_bytes) + list(actual_linear_velocity_x_bytes) + list(actual_linear_velocity_y_bytes) + list(actual_angular_velocity_z_bytes)
         self.conn.sendall((bytes(message)))
         
         
