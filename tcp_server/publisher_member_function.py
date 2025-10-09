@@ -26,6 +26,7 @@ from nav_msgs.msg import Odometry
 from rclpy.action import ActionServer
 from action_msgs.msg import GoalStatusArray
 from nav_msgs.msg import OccupancyGrid
+from tf.transformations import euler_from_quaternion
 
 from std_msgs.msg import Header
 
@@ -157,6 +158,10 @@ class MinimalPublisher(Node):
         self.actual_angular_velocity_z = msg.twist.twist.angular.z
         self.actual_linear_velocity_x = msg.twist.twist.linear.x
         self.actual_linear_velocity_y = msg.twist.twist.linear.y
+
+        quaternion_list = [msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
+        (self.roll, self.pitch, self.yaw) = euler_from_quaternion(quaternion_list)
+        print(f"Orientation: {self.roll} {self.pitch} {self.yaw}")
         
     def listener_callback_goal_status(self, msg):
         if len(msg.status_list) == 0:
