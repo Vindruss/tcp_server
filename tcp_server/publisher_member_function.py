@@ -112,12 +112,15 @@ class MinimalPublisher(Node):
 
         # convert msg.data to signed bytes
         signed_data = []
-        for i in msg.data:
-            if i < 0:
-                signed_data.append(256 + i)
-            else:
-                signed_data.append(i)
+        # for i in msg.data:
+        #     if i < 0:
+        #         signed_data.append(256 + i)
+        #     else:
+        #         signed_data.append(i)
             
+        for i in msg.data:
+            signed_data.append(i)
+                
             
 
         print(f"Map: {msg.info.resolution} {msg.info.width} {msg.info.height} {msg.info.origin.position.x} {msg.info.origin.position.y} {len(msg.data)}")
