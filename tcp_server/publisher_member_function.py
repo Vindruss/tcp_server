@@ -141,19 +141,14 @@ class MinimalPublisher(Node):
         #             self.conn.sendall((bytes(point_message)))
 
         #send map data in chunks of 1024 bytes
-        # chunk_size = 500
-        # for i in range(0, len(signed_data), chunk_size):
-        #     if(i + chunk_size > len(signed_data)):
-        #         chunk_size = len(signed_data) - i
-        #     chunk = [104] + signed_data[i:i+chunk_size]
-        #     self.conn.sendall((bytes(chunk)))
-
         chunk_size = 500
-        for i in range(0, len(msg.data), chunk_size):
+        for i in range(0, len(signed_data), chunk_size):
             if(i + chunk_size > len(signed_data)):
-                chunk_size = len(msg.data) - i
-            chunk = [104] + msg.data[i:i+chunk_size]
+                chunk_size = len(signed_data) - i
+            chunk = [104] + signed_data[i:i+chunk_size]
             self.conn.sendall((bytes(chunk)))
+
+      
             
 
             
