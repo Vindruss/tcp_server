@@ -118,7 +118,7 @@ class MinimalPublisher(Node):
 
         self.launch_service = LaunchService()
         self.launch_service.include_launch_description(ld)
-        t = threading.Thread(target=self.launch_service.run)
+        t = threading.Thread(target=self.launch_service.run_async)
         t.start()
         sleep(5) # wait for listener to fully start
         self.launch_service.shutdown()
