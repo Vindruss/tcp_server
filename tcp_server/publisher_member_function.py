@@ -22,6 +22,8 @@ import sys
 
 from launch import LaunchDescription, LaunchService
 from launch.actions import IncludeLaunchDescription, TimerAction
+from launch import LaunchIntrospector  # noqa: E402
+from launch import LaunchService  # noqa: E402
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 from geometry_msgs.msg import Twist
@@ -34,7 +36,7 @@ from rclpy.action import ActionServer
 from action_msgs.msg import GoalStatusArray
 from nav_msgs.msg import OccupancyGrid
 from tf_transformations import euler_from_quaternion
-from roslaunch import roslaunch
+import launch_ros.actions  # noqa: E402
 
 from std_msgs.msg import Header
 
@@ -103,17 +105,19 @@ class MinimalPublisher(Node):
             10)
         self.subscription_map
 
-        package = 'demo_nodes_cpp'
-        executable = 'talker'
-        node = roslaunch.core.Node(package, executable)
 
-        launch = roslaunch.scriptapi.ROSLaunch()
-        launch.start()
+        ld = LaunchDescription([
+        launch_ros.actions.Node(
+            package='demo_nodes_cpp', executable='talker', output='screen',
+            remappings=[('chatter', 'my_chatter')]),
+        launch_ros.actions.Node(
+            package='demo_nodes_cpp', executable='listener', output='screen',
+            remappings=[('chatter', 'my_chatter')]),
+        ])
 
-        process = launch.launch(node)
-
-
-        print(process.is_alive())   
+        self.launch_service = LaunchService()
+        self.launch_service.include_launch_description(ld)
+        self.launch_service.start()
 
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
