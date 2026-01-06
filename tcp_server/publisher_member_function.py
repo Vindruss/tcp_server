@@ -117,7 +117,7 @@ class MinimalPublisher(Node):
 
         self.launch_service = LaunchService()
         self.launch_service.include_launch_description(ld)
-        self.launch_service.start()
+        self.launch_service.run()
 
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
