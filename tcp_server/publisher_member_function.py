@@ -12,11 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from multiprocessing import process
 import rclpy
 import threading
 import socket
 from enum import Enum
 
+import sys
+
+from launch import LaunchDescription, LaunchService
+from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Pose
@@ -27,6 +34,7 @@ from rclpy.action import ActionServer
 from action_msgs.msg import GoalStatusArray
 from nav_msgs.msg import OccupancyGrid
 from tf_transformations import euler_from_quaternion
+from roslaunch import roslaunch
 
 from std_msgs.msg import Header
 
@@ -95,6 +103,17 @@ class MinimalPublisher(Node):
             10)
         self.subscription_map
 
+        package = 'demo_nodes_cpp'
+        executable = 'talker'
+        node = roslaunch.core.Node(package, executable)
+
+        launch = roslaunch.scriptapi.ROSLaunch()
+        launch.start()
+
+        process = launch.launch(node)
+
+
+        print(process.is_alive())   
 
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
@@ -213,7 +232,6 @@ class MinimalPublisher(Node):
         self.conn.sendall((bytes(message)))
         
         
-        
 
         
     def tcp_loop(self):
@@ -274,6 +292,23 @@ class MinimalPublisher(Node):
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0 
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0 
                         self.set_initial_pose(x, y, z)
+                    #11 - zapni mapovaní 
+                    case 11:
+                        print("START MAPPING")
+                        # TODO: implement mapping start
+                    #12 - vypni mapovaní
+                    case 12:
+                        print("STOP MAPPING")
+                        # TODO: implement mapping stop
+                    #13 - start navigace
+                    case 13:
+                        print("START NAVIGATION")
+                        # TODO: implement navigation start
+                    #14 - staop navigace
+                    case 14: 
+                        print("STOP NAVIGATION")
+                        # TODO: implement navigation stop
+
 
 
                     case _:
