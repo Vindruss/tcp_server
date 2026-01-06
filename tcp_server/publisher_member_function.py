@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from multiprocessing import process
+from time import sleep
 import rclpy
 import threading
 import socket
@@ -118,7 +119,8 @@ class MinimalPublisher(Node):
         self.launch_service = LaunchService()
         self.launch_service.include_launch_description(ld)
         self.launch_service.run()
-
+        sleep(10)
+        self.launch_service.shutdown()
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
