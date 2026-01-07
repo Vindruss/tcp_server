@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-                'talker = tcp_server.publisher_member_function:main',
+                'talker = tcp_server.robot_service:main',
         ],
 },
 )

@@ -23,8 +23,8 @@ import sys
 
 from launch import LaunchDescription, LaunchService
 from launch.actions import IncludeLaunchDescription, TimerAction
-from launch import LaunchIntrospector  # noqa: E402
-from launch import LaunchService  # noqa: E402
+from launch import LaunchIntrospector  
+from launch import LaunchService 
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 from geometry_msgs.msg import Twist
@@ -37,7 +37,7 @@ from rclpy.action import ActionServer
 from action_msgs.msg import GoalStatusArray
 from nav_msgs.msg import OccupancyGrid
 from tf_transformations import euler_from_quaternion
-import launch_ros.actions  # noqa: E402
+import launch_ros.actions  
 import asyncio
 import multiprocessing
 
@@ -76,7 +76,7 @@ class Ros2LaunchParent:
             loop.run_until_complete(launch_task)
 
 
-class MinimalPublisher(Node):
+class RobotServiceNode(Node):
     goal_linear_velocity_x = 0.0
     goal_linear_velocity_y = 0.0
     goal_angular_velocity_z = 0.0
@@ -93,13 +93,11 @@ class MinimalPublisher(Node):
     conn_state = False
     conn = None
     def __init__(self):
-        super().__init__('tcp_server')
+        super().__init__('robot_service')
         #self.publisher_ = self.create_publisher(String, 'topic', 10)
         self.publisher_twist = self.create_publisher(Twist, 'cmd_vel', 10)
         self.publisher_pose = self.create_publisher(PoseStamped, 'goal_pose', 10)
         self.publisher_initial_pose = self.create_publisher(PoseWithCovarianceStamped, 'initialpose', 10)
-
-        
 
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -410,13 +408,14 @@ class MinimalPublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    minimal_publisher = MinimalPublisher()
-    rclpy.spin(minimal_publisher)
+    robot_service_node = RobotServiceNode()
+    rclpy.spin(robot_service_node)
+    
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    minimal_publisher.destroy_node()
+    robot_service_node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
