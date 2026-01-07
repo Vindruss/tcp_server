@@ -38,6 +38,8 @@ from action_msgs.msg import GoalStatusArray
 from nav_msgs.msg import OccupancyGrid
 from tf_transformations import euler_from_quaternion
 import launch_ros.actions  # noqa: E402
+import asyncio
+import multiprocessing
 
 from std_msgs.msg import Header
 
@@ -51,6 +53,27 @@ class States(Enum):
     VEL_CONTROL = 2
     CALIBRATION = 3
     STOP = 4
+
+
+class Ros2LaunchParent:
+    def start(self, launch_description: LaunchDescription):
+        self._stop_event = multiprocessing.Event()
+        self._process = multiprocessing.Process(target=self._run_process, args=(self._stop_event, launch_description), daemon=True)
+        self._process.start()
+
+    def shutdown(self):
+        self._stop_event.set()
+        self._process.join()
+
+    def _run_process(self, stop_event, launch_description):
+        loop = asyncio.get_event_loop()
+        launch_service = LaunchService()
+        launch_service.include_launch_description(launch_description)
+        launch_task = loop.create_task(launch_service.run_async())
+        loop.run_until_complete(loop.run_in_executor(None, stop_event.wait))
+        if not launch_task.done():
+            asyncio.ensure_future(launch_service.shutdown(), loop=loop)
+            loop.run_until_complete(launch_task)
 
 
 class MinimalPublisher(Node):
@@ -116,11 +139,10 @@ class MinimalPublisher(Node):
             remappings=[('chatter', 'my_chatter')]),
         ])
 
-        self.launch_service = LaunchService()
-        self.launch_service.include_launch_description(ld)
-        self.launch_service.run()
+        launch_parent = Ros2LaunchParent()
+        launch_parent.start(ld)     
         sleep(10)
-        self.launch_service.shutdown(True)
+        launch_parent.shutdown()
         
 
 
