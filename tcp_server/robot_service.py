@@ -74,22 +74,6 @@ class Ros2LaunchParent:
             asyncio.ensure_future(launch_service.shutdown(), loop=loop)
             loop.run_until_complete(launch_task)
 
-class Mapping:
-    def __init__(self):
-        pass
-    def start_mapping(self):
-        pass
-    def mapping_loop(self):
-        pass
-        
-class Localization:
-    def __init__(self):
-        pass
-    def start_localization(self):
-        pass
-    
-
-
 class RobotServiceNode(Node):
     goal_linear_velocity_x = 0.0
     goal_linear_velocity_y = 0.0
@@ -142,27 +126,6 @@ class RobotServiceNode(Node):
         self.slam_ld = generate_launch_description_slam()
         self.lp_nav = Ros2LaunchParent()
         self.lp_slam = Ros2LaunchParent()
-
-
-        # ld = LaunchDescription([
-        # launch_ros.actions.Node(
-        #     package='demo_nodes_cpp', executable='talker', output='screen',
-        #     remappings=[('chatter', 'my_chatter')]),
-        # launch_ros.actions.Node(
-        #     package='demo_nodes_cpp', executable='listener', output='screen',
-        #     remappings=[('chatter', 'my_chatter')]),
-        # ])
-
-        # launch_parent = Ros2LaunchParent()
-        # launch_parent.start(ld)     
-        # sleep(10)
-        # launch_parent.shutdown()
-
-        # print("Launch service finished")
-
-        self.lp_slam.start(self.slam_ld)
-        sleep(10)
-        self.lp_slam.shutdown()
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
@@ -254,7 +217,6 @@ class RobotServiceNode(Node):
         message = [102] + [msg.status_list[-1].status] 
         self.conn.sendall((bytes(message)))
         
-    #   
         
         
 
