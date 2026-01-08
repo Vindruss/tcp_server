@@ -18,6 +18,8 @@ import rclpy
 import threading
 import socket
 from enum import Enum
+import navigation_description
+import slam_description
 
 import sys
 
@@ -42,7 +44,6 @@ import asyncio
 import multiprocessing
 
 from std_msgs.msg import Header
-
 
 from rclpy.node import Node
 
@@ -75,6 +76,21 @@ class Ros2LaunchParent:
             asyncio.ensure_future(launch_service.shutdown(), loop=loop)
             loop.run_until_complete(launch_task)
 
+class Mapping:
+    def __init__(self):
+        pass
+    def start_mapping(self):
+        pass
+    def mapping_loop(self):
+        pass
+        
+class Localization:
+    def __init__(self):
+        pass
+    def start_localization(self):
+        pass
+    
+
 
 class RobotServiceNode(Node):
     goal_linear_velocity_x = 0.0
@@ -103,9 +119,6 @@ class RobotServiceNode(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0
         
-        
-
-
         self.subscription_odom = self.create_subscription(
             Odometry,
             'odom',
@@ -127,24 +140,31 @@ class RobotServiceNode(Node):
             10)
         self.subscription_map
 
+        self.nav_ld = navigation_description.generate_launch_description_nav()
+        self.slam_ld = slam_description.generate_launch_description_slam()
+        self.lp_nav = Ros2LaunchParent()
+        self.lp_slam = Ros2LaunchParent()
 
-        ld = LaunchDescription([
-        launch_ros.actions.Node(
-            package='demo_nodes_cpp', executable='talker', output='screen',
-            remappings=[('chatter', 'my_chatter')]),
-        launch_ros.actions.Node(
-            package='demo_nodes_cpp', executable='listener', output='screen',
-            remappings=[('chatter', 'my_chatter')]),
-        ])
 
-        launch_parent = Ros2LaunchParent()
-        launch_parent.start(ld)     
+        # ld = LaunchDescription([
+        # launch_ros.actions.Node(
+        #     package='demo_nodes_cpp', executable='talker', output='screen',
+        #     remappings=[('chatter', 'my_chatter')]),
+        # launch_ros.actions.Node(
+        #     package='demo_nodes_cpp', executable='listener', output='screen',
+        #     remappings=[('chatter', 'my_chatter')]),
+        # ])
+
+        # launch_parent = Ros2LaunchParent()
+        # launch_parent.start(ld)     
+        # sleep(10)
+        # launch_parent.shutdown()
+
+        # print("Launch service finished")
+
+        self.lp_slam.start(self.slam_ld)
         sleep(10)
-        launch_parent.shutdown()
-        
-
-
-        print("Launch service finished")
+        self.lp_slam.shutdown()
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
@@ -195,12 +215,6 @@ class RobotServiceNode(Node):
             chunk = [104] + signed_data[i:i+chunk_size]
             self.conn.sendall((bytes(chunk)))
 
-      
-            
-
-            
-
-        
 
     # naslouchani aktualni pozice
     def listener_callback_odom(self, msg):     
@@ -326,18 +340,22 @@ class RobotServiceNode(Node):
                     case 11:
                         print("START MAPPING")
                         # TODO: implement mapping start
+                        self.lp_slam.start(self.slam_ld)
                     #12 - vypni mapovaní
                     case 12:
                         print("STOP MAPPING")
                         # TODO: implement mapping stop
+                        self.lp_slam.shutdown()
                     #13 - start navigace
                     case 13:
                         print("START NAVIGATION")
                         # TODO: implement navigation start
+                        self.lp_nav.start(self.nav_ld)
                     #14 - staop navigace
                     case 14: 
                         print("STOP NAVIGATION")
                         # TODO: implement navigation stop
+                        self.lp_nav.shutdown()
 
 
 
