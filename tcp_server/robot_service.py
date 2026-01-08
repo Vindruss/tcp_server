@@ -11,17 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import sys
 from multiprocessing import process
 from time import sleep
 import rclpy
 import threading
 import socket
 from enum import Enum
-import navigation_description
-import slam_description
-
-import sys
+from .navigation_description import generate_launch_description_nav
+from .slam_description import generate_launch_description_slam
 
 from launch import LaunchDescription, LaunchService
 from launch.actions import IncludeLaunchDescription, TimerAction
@@ -140,8 +138,8 @@ class RobotServiceNode(Node):
             10)
         self.subscription_map
 
-        self.nav_ld = navigation_description.generate_launch_description_nav()
-        self.slam_ld = slam_description.generate_launch_description_slam()
+        self.nav_ld = generate_launch_description_nav()
+        self.slam_ld = generate_launch_description_slam()
         self.lp_nav = Ros2LaunchParent()
         self.lp_slam = Ros2LaunchParent()
 
