@@ -20,6 +20,7 @@ import socket
 from enum import Enum
 from .navigation_description import generate_launch_description_nav
 from .slam_description import generate_launch_description_slam
+from .robot_description import generate_launch_description_robot
 
 from launch import LaunchDescription, LaunchService
 from launch.actions import IncludeLaunchDescription, TimerAction
@@ -124,8 +125,10 @@ class RobotServiceNode(Node):
 
         self.nav_ld = generate_launch_description_nav()
         self.slam_ld = generate_launch_description_slam()
+        self.robot_ld = generate_launch_description_robot()
         self.lp_nav = Ros2LaunchParent()
         self.lp_slam = Ros2LaunchParent()
+        self.lp_robot = Ros2LaunchParent()
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
@@ -296,23 +299,32 @@ class RobotServiceNode(Node):
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0 
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0 
                         self.set_initial_pose(x, y, z)
-                    #11 - zapni mapovaní 
+
+                    #11 - zapni robota 
                     case 11:
+                        print("START ROBOT SYSTEMS")
+                        self.lp_robot.start(self.robot_ld)
+                    #12 - vypni robota
+                    case 12:
+                        print("STOP ROBOT SYSTEMS")
+                        self.lp_robot.shutdown()
+                    #13 - zapni mapovaní 
+                    case 13:
                         print("START MAPPING")
                         # TODO: implement mapping start
                         self.lp_slam.start(self.slam_ld)
-                    #12 - vypni mapovaní
-                    case 12:
+                    #14 - vypni mapovaní
+                    case 14:
                         print("STOP MAPPING")
                         # TODO: implement mapping stop
                         self.lp_slam.shutdown()
-                    #13 - start navigace
-                    case 13:
+                    #15 - start navigace
+                    case 15:
                         print("START NAVIGATION")
                         # TODO: implement navigation start
                         self.lp_nav.start(self.nav_ld)
-                    #14 - staop navigace
-                    case 14: 
+                    #16 - staop navigace
+                    case 16: 
                         print("STOP NAVIGATION")
                         # TODO: implement navigation stop
                         self.lp_nav.shutdown()

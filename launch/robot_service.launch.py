@@ -6,6 +6,6 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='tcp_server',
-            executable='robot_service.py',
+            executable='robot_service',
         )
     ])
