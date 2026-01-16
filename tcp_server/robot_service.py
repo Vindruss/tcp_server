@@ -378,7 +378,12 @@ class RobotServiceNode(Node):
         msg.pose.position.x = float(x)
         msg.pose.position.y = float(y)
         # convert angle to orientation 
-        msg.pose.orientation = quaternion_from_euler(0, 0, angle)
+        quaternion = quaternion_from_euler(0, 0, angle)
+        msg.pose.orientation.x = quaternion[0]
+        msg.pose.orientation.y = quaternion[1]
+        msg.pose.orientation.z = quaternion[2]
+        msg.pose.orientation.w = quaternion[3]
+        
        #msg.pose.orientation.z = float(angle)
         print(f"Goal pos: {x} {y} {angle}")
         self.publisher_pose.publish(msg)
