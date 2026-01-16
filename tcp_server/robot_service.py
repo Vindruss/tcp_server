@@ -340,7 +340,7 @@ class RobotServiceNode(Node):
                     case 17:
                         print("SAVE MAP")
                         # TODO: implement map saving
-                        Command(['ros2 run nav2_map_server map_saver_cli -f ~/map/map'])
+                        Command(['ros2 run nav2_map_server map_saver_cli -f map/map'])
                     case _:
                         pass
             except Exception as e:
