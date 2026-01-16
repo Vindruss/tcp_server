@@ -181,8 +181,8 @@ def generate_launch_description_robot():
         twist_stamper,
         delayed_controller_manager,
         delayed_mecanum_controller_spawner,
-        delayed_joint_broad_spawner,
-        slam
+        delayed_joint_broad_spawner
+        # slam
         # nav,
         # tcp_server
     ])

@@ -19,8 +19,10 @@ import threading
 import socket
 from enum import Enum
 from .navigation_description import generate_launch_description_nav
+from.navigation_description_with_map import generate_launch_description_nav_with_map
 from .slam_description import generate_launch_description_slam
 from .robot_description import generate_launch_description_robot
+from .localization_description import generate_launch_description_loc
 
 from launch import LaunchDescription, LaunchService
 from launch.actions import IncludeLaunchDescription, TimerAction
@@ -38,9 +40,12 @@ from rclpy.action import ActionServer
 from action_msgs.msg import GoalStatusArray
 from nav_msgs.msg import OccupancyGrid
 from tf_transformations import euler_from_quaternion
+from tf_transformations import quaternion_from_euler
+import tf
 import launch_ros.actions  
 import asyncio
 import multiprocessing
+from launch.substitutions import Command
 
 from std_msgs.msg import Header
 
@@ -116,19 +121,23 @@ class RobotServiceNode(Node):
             10)
         self.subscription_goal_status
 
-        self.subscription_map = self.create_subscription(
-            OccupancyGrid,
-            'map',
-            self.listener_callback_map,
-            10)
-        self.subscription_map
+        # self.subscription_map = self.create_subscription(
+        #     OccupancyGrid,
+        #     'map',
+        #     self.listener_callback_map,
+        #     10)
+        # self.subscription_map
 
         self.nav_ld = generate_launch_description_nav()
+        self.nav_ld_map = generate_launch_description_nav_with_map()
         self.slam_ld = generate_launch_description_slam()
         self.robot_ld = generate_launch_description_robot()
+        self.loc_ld = generate_launch_description_loc()
         self.lp_nav = Ros2LaunchParent()
+        self.lp_nav_map = Ros2LaunchParent()
         self.lp_slam = Ros2LaunchParent()
         self.lp_robot = Ros2LaunchParent()
+        self.lp_loc = Ros2LaunchParent()
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
@@ -141,7 +150,6 @@ class RobotServiceNode(Node):
         map_height_bytes = int(msg.info.height).to_bytes( 4 , byteorder='little' , signed=True )
         map_origin_x_bytes = int(msg.info.origin.position.x*1000).to_bytes( 4 , byteorder='little' , signed=True )
         map_origin_y_bytes = int(msg.info.origin.position.y*1000).to_bytes( 4 , byteorder='little' , signed=True )
-        
 
         # convert msg.data to signed bytes
         signed_data = []
@@ -151,9 +159,6 @@ class RobotServiceNode(Node):
             else:
                 signed_data.append(i)
             
-                
-            
-
         print(f"Map: {msg.info.resolution} {msg.info.width} {msg.info.height} {msg.info.origin.position.x} {msg.info.origin.position.y} {len(msg.data)}")
         message = [103] + list(map_resolution_bytes) + list(map_width_bytes) + list(map_height_bytes) + list(map_origin_x_bytes) + list(map_origin_y_bytes)
         if not self.conn_state:
@@ -313,24 +318,29 @@ class RobotServiceNode(Node):
                         print("START MAPPING")
                         # TODO: implement mapping start
                         self.lp_slam.start(self.slam_ld)
+                        self.lp_nav.start(self.nav_ld)
                     #14 - vypni mapovaní
                     case 14:
                         print("STOP MAPPING")
                         # TODO: implement mapping stop
                         self.lp_slam.shutdown()
+                        self.lp_nav.shutdown()
                     #15 - start navigace
                     case 15:
-                        print("START NAVIGATION")
+                        print("START SCANNING")
                         # TODO: implement navigation start
-                        self.lp_nav.start(self.nav_ld)
+                        self.lp_nav.start(self.nav_ld_map)
+                        self.lp_loc.start(self.loc_ld)
                     #16 - staop navigace
                     case 16: 
-                        print("STOP NAVIGATION")
+                        print("STOP SCANNING")
                         # TODO: implement navigation stop
                         self.lp_nav.shutdown()
-
-
-
+                        self.lp_loc.shutdown()
+                    case 17:
+                        print("SAVE MAP")
+                        # TODO: implement map saving
+                        Command(['ros2 run nav2_map_server map_saver_cli -f ~/map/map'])
                     case _:
                         pass
             except Exception as e:
@@ -355,7 +365,7 @@ class RobotServiceNode(Node):
         msg.header = header
         msg.pose.pose.position.x = float(x)
         msg.pose.pose.position.y = float(y)
-        msg.pose.pose.orientation.z = float(angle)
+        msg.pose.orientatition = quaternion_from_euler(0, 0, angle)
         print(f"Initial pos: {x} {y} {angle}")
         self.publisher_initial_pose.publish(msg)
 
@@ -367,7 +377,9 @@ class RobotServiceNode(Node):
         msg.header = header
         msg.pose.position.x = float(x)
         msg.pose.position.y = float(y)
-        msg.pose.orientation.z = float(angle)
+        # convert angle to orientation 
+        msg.pose.orientatition = quaternion_from_euler(0, 0, angle)
+       #msg.pose.orientation.z = float(angle)
         print(f"Goal pos: {x} {y} {angle}")
         self.publisher_pose.publish(msg)
         

@@ -26,7 +26,7 @@ from launch_ros.descriptions import ComposableNode, ParameterFile
 from nav2_common.launch import RewrittenYaml
 
 
-def generate_launch_description_nav():
+def generate_launch_description_nav_with_map():
     # Get the launch directory
     bringup_dir = get_package_share_directory('my_bot')
 
@@ -39,6 +39,7 @@ def generate_launch_description_nav():
     container_name_full = (namespace, '/', container_name)
     use_respawn = LaunchConfiguration('use_respawn')
     log_level = LaunchConfiguration('log_level')
+    
 
     lifecycle_nodes = [
         'controller_server',
