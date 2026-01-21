@@ -30,7 +30,7 @@ from nav2_common.launch import RewrittenYaml
 
 DEFAULT_MAP_YAML = '/home/robot/ros2_ws/map/new_map.yaml'
 
-def generate_description_loc():
+def generate_launch_description_loc():
     # Get the launch directory
     bringup_dir = get_package_share_directory('nav2_bringup')
 
