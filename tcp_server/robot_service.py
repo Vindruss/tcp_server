@@ -41,6 +41,7 @@ from action_msgs.msg import GoalStatusArray
 from nav_msgs.msg import OccupancyGrid
 from tf_transformations import euler_from_quaternion
 from tf_transformations import quaternion_from_euler
+import subprocess
 
 import launch_ros.actions  
 import asyncio
@@ -340,7 +341,8 @@ class RobotServiceNode(Node):
                     case 17:
                         print("SAVE MAP")
                         # TODO: implement map saving
-                        Command(['ros2 run nav2_map_server map_saver_cli -f map/map'])
+                        subprocess.run(["ros2", "run", "nav2_map_server", "map_saver_cli", "-f", "map/map"])
+                        #Command(['ros2 run nav2_map_server map_saver_cli -f map/map'])
                     case _:
                         pass
             except Exception as e:
