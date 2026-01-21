@@ -330,13 +330,13 @@ class RobotServiceNode(Node):
                     case 15:
                         print("START SCANNING")
                         # TODO: implement navigation start
-                        self.lp_nav.start(self.nav_ld_map)
+                        #self.lp_nav.start(self.nav_ld_map)
                         self.lp_loc.start(self.loc_ld)
                     #16 - staop navigace
                     case 16: 
                         print("STOP SCANNING")
                         # TODO: implement navigation stop
-                        self.lp_nav.shutdown()
+                        #self.lp_nav.shutdown()
                         self.lp_loc.shutdown()
                     case 17:
                         print("SAVE MAP")
