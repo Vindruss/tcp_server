@@ -363,7 +363,9 @@ class RobotServiceNode(Node):
     def set_initial_pose(self, x, y, angle):
         msg = PoseWithCovarianceStamped()
         header = Header()   
-        header.stamp = self.get_clock().now().to_msg()
+        
+        header.stamp = rclpy.time.Time()
+        #header.stamp = self.get_clock().now().to_msg()
         header.frame_id = "map" 
         msg.header = header
         msg.pose.pose.position.x = float(x)
