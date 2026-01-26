@@ -249,7 +249,7 @@ class RobotServiceNode(Node):
         
     def tcp_loop(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = '10.0.100.145'
+        host = '192.168.127.11'
         port = 8899
         self.s.bind((host, port))
         self.connect()
