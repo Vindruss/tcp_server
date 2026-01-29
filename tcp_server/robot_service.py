@@ -282,15 +282,15 @@ class RobotServiceNode(Node):
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/1000.0
                         y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0 
                         z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/1000.0 
-                        print(f"GOAL POSITION DATA: {x} {y} {z}")                 
+                        print(f"GOAL POSITION DATA: {x} {y} {z}")    
                         self.set_goal_position(x, y, z)
                         #state = States.POSITIONING
                     #2 - jed urcitou rychlosti
                     case 2:
                         print("VELOCITY")
                         x = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/100.0
-                        y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/100.0 
-                        z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/100.0 
+                        y = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/100.0
+                        z = float(int.from_bytes(data[9:13], byteorder='little', signed=True))/100.0
                         self.set_velocity(x,y, z)
                         #state = States.VEL_CONTROL
 
@@ -320,13 +320,13 @@ class RobotServiceNode(Node):
                         print("START MAPPING")
                         # TODO: implement mapping start
                         self.lp_slam.start(self.slam_ld)
-                        #self.lp_nav.start(self.nav_ld)
+                        self.lp_nav.start(self.nav_ld)
                     #14 - vypni mapovaní
                     case 14:
                         print("STOP MAPPING")
                         # TODO: implement mapping stop
                         self.lp_slam.shutdown()
-                        #self.lp_nav.shutdown()
+                        self.lp_nav.shutdown()
                     #15 - start navigace
                     case 15:
                         print("START SCANNING")
