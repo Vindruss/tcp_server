@@ -120,7 +120,7 @@ def generate_launch_description_robot():
         )
     )
 
-    filter_yaml = os.path.join(package_name, "config", "scan_filter_chain.yaml")
+    filter_yaml = os.path.join(get_package_share_directory(package_name), "config", "scan_filter_chain.yaml")
 
     scan_filter = Node(
         package="laser_filters",
