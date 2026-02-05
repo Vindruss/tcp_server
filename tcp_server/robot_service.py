@@ -225,10 +225,6 @@ class RobotServiceNode(Node):
         
         message = [102] + [msg.status_list[-1].status] 
         self.conn.sendall((bytes(message)))
-        
-        
-        
-
 
     # posílání goal position a rychlosti   
     def timer_callback(self): 
@@ -263,14 +259,6 @@ class RobotServiceNode(Node):
                     self.connect()
                     continue
                     
-                    
-                
-                # if data[0] == 97:
-                #     conn.send(('Position: ' + str(self.x) + ' ' + str(self.y)).encode())
-                #     #self.velocity = 1.0
-                # else: 
-                #     conn.send(b"spatne")
-                #     #self.velocity = 0.0
 
                 #urceni typu zpravy
                 match data[0]:
@@ -416,14 +404,11 @@ class RobotServiceNode(Node):
         self.publisher_twist.publish(msg)
         
 
-
-
 def main(args=None):
     rclpy.init(args=args)
     robot_service_node = RobotServiceNode()
     rclpy.spin(robot_service_node)
     
-
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)

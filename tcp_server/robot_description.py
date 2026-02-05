@@ -120,6 +120,16 @@ def generate_launch_description_robot():
         )
     )
 
+    filter_yaml = os.path.join(package_name, "config", "scan_filter_chain.yaml")
+
+    scan_filter = Node(
+        package="laser_filters",
+        executable="scan_to_scan_filter_chain",
+        name="scan_to_scan_filter_chain",
+        output="screen",
+        parameters=[filter_yaml],
+    )
+
 
     slam = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
@@ -175,7 +185,8 @@ def generate_launch_description_robot():
     return LaunchDescription([
         rsp,
         lidars,
-        lidar_merger,
+        scan_filter,
+        #lidar_merger,
         # joystick,
         twist_mux,
         twist_stamper,
