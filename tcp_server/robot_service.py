@@ -18,6 +18,8 @@ import rclpy
 import threading
 import socket
 from enum import Enum
+
+from tcp_server.wall_follower import WallFollower
 from .navigation_description import generate_launch_description_nav
 from.navigation_description_with_map import generate_launch_description_nav_with_map
 from .slam_description import generate_launch_description_slam
@@ -122,13 +124,6 @@ class RobotServiceNode(Node):
             10)
         self.subscription_goal_status
 
-        # self.subscription_map = self.create_subscription(
-        #     OccupancyGrid,
-        #     'map',
-        #     self.listener_callback_map,
-        #     10)
-        # self.subscription_map
-
         self.nav_ld = generate_launch_description_nav()
         self.nav_ld_map = generate_launch_description_nav_with_map()
         self.slam_ld = generate_launch_description_slam()
@@ -142,6 +137,14 @@ class RobotServiceNode(Node):
 
         t1 = threading.Thread(target=self.tcp_loop, args=())
         t1.start()
+
+        t2 = threading.Thread(target=self.wall_follower_loop, args=())
+        t2.start()
+
+    def wall_follower_loop(self):
+        self.wall_follower = WallFollower()
+        rclpy.spin(self.wall_follower)
+        self.wall_follower.destroy_node()
 
     def listener_callback_map(self, msg):
         
@@ -245,7 +248,7 @@ class RobotServiceNode(Node):
         
     def tcp_loop(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        host = '192.168.127.11'
+        host = '192.168.1.11'
         port = 8899
         self.s.bind((host, port))
         self.connect()
@@ -332,6 +335,19 @@ class RobotServiceNode(Node):
                         # TODO: implement map saving
                         subprocess.run(["ros2", "run", "nav2_map_server", "map_saver_cli", "-f", "map/map"])
                         #Command(['ros2 run nav2_map_server map_saver_cli -f map/map'])
+                    case 18:
+                        print("START WALL FOLLOWING")
+                        d = float(int.from_bytes(data[1:5], byteorder='little', signed=True))/1000.0
+                        position_x = float(int.from_bytes(data[5:9], byteorder='little', signed=True))/1000.0
+                        side = int(data[10])
+                        self.wall_follower.nastav_stranu("left" if side == 1 else "right")
+                        self.wall_follower.nastav_cilove_x(position_x, tolerance=0.02)
+                        self.wall_follower.start_jizdy()
+
+                    case 19:
+                        print("STOP WALL FOLLOWING")
+                        self.wall_follower.stop_jizdy()
+
                     case _:
                         pass
             except Exception as e:
@@ -402,6 +418,7 @@ class RobotServiceNode(Node):
         msg.angular.z = float(0)
         print(f"Velocity: {x} {y} {z}")
         self.publisher_twist.publish(msg)
+
         
 
 def main(args=None):
